@@ -1,98 +1,188 @@
-# Create An Exercise
+# Score-Based Tic-Tac-Toe
 
-## Introduction
+You will create a tic-tac-toe game where the goal is to achieve a certain amount of points faster than your oppenent. Alternatively, there are cases where the game ends early and the player with the higher score until then wins.
 
-In preparation for the upcoming final exam, we have been practicing ASP.NET Core, Entity Framework Core, Angular, and Aspire. We started with exercises that I created. You got nearly empty starter code and you had to fill in the blanks. The last exam had a twist: You received a ready-made project and you had to change it based on updated requirements.
+## Main Idea
 
-Today’s exercise has another twist: **You will create an exercise for your classmates**. The goal is that you think not only about the implementation, but also about the requirements, the structure of the starter code, and the testing of an exercise.
+The game starts with a normal 3x3 tic-tac-toe board. When a player left-clicks on an empty cell, they place their mark there, alternating between "X" and "O". When they right-click however, the place a nested grid inside the cell instead without any mark in it. At every nesting level, the score from a placed mark is counted differently:
 
-## Requirements
+- On the highest level, you get 1 point for every mark.
+- On the second level, you get 0.5 points for every mark.
+- On the third level, you get 0.25 points for every mark.
+  Etc.
 
-Invent an exercise based on the [existing starter code for our three-tier architecture](https://github.com/rstropek/htl-2025-26-5th/tree/main/20-fullstack-starter) (SQLite, EF Core, ASP.NET Core Web API, Angular). You are free to choose the domain of the exercise. The only requirement is that your exercise must include the following functional requirements:
+If you get three in a row on any level, you get (winning multiplier)⋅(typical level points) instead of just the typical level points. This is not for the marks themselves, but for the whole field. The marks in a field which has been won by a player or which has reached a stalemate are either counted or not. If not, all points made by marks and sub-fields in the field are lost for both players when the field is won. This behaviour has to be entered as a setting before the game starts. The same goes for the winning multiplier, it also has to be entered as a setting before the game starts. Additionally, the maximum number of nestings possible also has to be entered as a setting before the game starts. Same goes for the number of points needed to win.
 
-* One piece of **non-trivial business logic**.
-  * The location of the business logic (e.g. something in the Web API, logic in the UI, a validation check during data import, etc.) is up to you.
-* Create an **exercise-specific starter code** with a ready-made data model and data context.
-  * It must **not** be the task of the students to create the data model and data context. You must provide them.
-  * Your starter code must also contain automated tests that verify that the data context works and can be used to perform CRUD operations on the database.
-* Some **non-trivial data import**.
-  * Your import must require some logic.
-  * A simple import of a CSV or JSON file is **not** sufficient.
-  * The logic might be related to parsing a custom data format, validating data, processing all files in a folder, error handling, etc.
-  * Your exercise-specific starter code must contain some basic code structure for the import that the students can extend.
-* Extend or create a **Web API with ASP.NET Core Minimal API**.
-  * The exercise-specific starter code must contain some basic code structure for the Web API that the students can extend.
-* Extend or create an **Angular UI that consumes the Web API**.
-  * As usual, the UI must consume the auto-generated API client (via the Swagger file).
-  * The UI must contain at least one non-trivial piece of logic (e.g. filtering a list, a form with non-trivial validation, etc.).
-  * The exercise-specific starter code must contain some basic code structure for the Angular UI that the students can extend.
-* Extend or create **automated tests**.
-  * The tests can cover business logic, data access, or the Web API.
-  * Require C# unit tests, not Angular tests.
-  * If students should extend/modify existing tests, you must provide some basic code structure for the tests in the starter code.
+Because the player who starts first has an edge, the second player also gets the points made for the first mark of the game.
 
-You have to **document the requirements** of the exercise in a markdown file. The structure and level of detail of the requirement specification must be similar to the exercises you typically get from your teacher.
+## Example Game
 
-### What counts as "non-trivial business logic"?
+Starting settings:
 
-As a rule of thumb, the non-trivial logic should meet at least one of the following criteria:
+- Maximum nesting level: 2
+- Points needed to win: 5
+- Winning multiplier: 3
+- Marks in won or stalemated fields are counted: yes
+- First-move compensation: second player receives the points of the first mark
 
-* It requires a **calculation** with multiple steps and edge cases (e.g. Austrian per diem calculation with different rules depending on duration, etc.).
-* It involves **deriving values** from multiple inputs (e.g. calculating the approximate distance between two GPS coordinates using Pythagoras).
-* It includes **validation rules** that go beyond basic field validation (e.g. checking for conflicting time ranges, enforcing business constraints, detecting duplicates).
-* It requires **processing multiple records** (e.g. aggregating values, applying rules across a set of imported data, computing statistics).
-* It has meaningful **error handling and decision logic** (e.g. partial imports, warnings vs errors, retry logic, conflict resolution).
+Starting board (level 1), scores X=0, O=0:
 
-The goal is that your classmates have to implement logic where they need to think, not just write a simple sequence of statements or a single `if` statement.
+```
++---+---+---+
+|   |   |   |
++---+---+---+
+|   |   |   |
++---+---+---+
+|   |   |   |
++---+---+---+
+```
 
-## Code Review Prompt
+Turn 1 (X left-clicks top-left, level 1 mark):
 
-Besides the exercise specification and the starter code, you also have to **create a code review prompt**. The code review prompt must be a markdown file that contains instructions for a frontier AI model like Claude Sonnet or GPT 5.x to perform a code review of a student solution.
+- X gains 1 point (level 1 mark).
+- O also gains 1 point (first-move compensation).
+  Scores: X=1, O=1
 
-The prompt must contain:
+Board now:
 
-* A description so that the AI understands what was given (starter code, requirements) and what the student had to do.
-* Quality criteria for the code review. Ask yourself: What should the AI consider good code? What should it consider bad code? What are the most important things to check in the review?
-* The structure of the code review document that the AI should produce.
+```
++---+---+---+
+| X |   |   |
++---+---+---+
+|   |   |   |
++---+---+---+
+|   |   |   |
++---+---+---+
+```
 
-## Deliverables
+Turn 2 (O right-clicks center, creates nested field id 101):
 
-* A markdown file documenting the requirements of the exercise.
-* A ready-made starter code for the exercise.
-* A markdown file containing the code review prompt for a frontier AI model.
-* You do **not** need to provide a sample solution for the exercise.
-* Provide all deliverables in a GitHub repository that your fellow students can access/fork.
-  * You can choose whether the repository should be public or private. If you choose private, make sure to give your fellow students and your teacher access to it.
+- No points yet (no mark was placed).
 
-## Use of AI
+Board now:
 
-In practice, we cannot prevent you from generating the entire exercise using AI. However, if you do that, the whole exercise becomes pointless: there will be little to no learning effect for you or your fellow students.
+```
++---+---+---+
+| X |   |   |
++---+---+---+
+|   |101|   |
++---+---+---+
+|   |   |   |
++---+---+---+
+```
 
-You can and you should use AI to **support** you during the creation of the exercise. Examples:
+Field 101 is shown here:
 
-* **You** invent the core idea of the exercise, create a list of keywords, and let the AI generate parts of the specification text based on your input.
-* **You** create the core structure of the starter code and let the AI fill in some of the details.
-* **You** create the core structure of the code review prompt and let the AI fill in some of the details.
-* **You** stay in the "driver seat" and use AI mainly to get feedback on your ideas and implementation.
+```
+- 101 -
++
++
+```
 
-## Exercise Mode
+Turn 3 (X plays inside field 101, top-left of level 2):
 
-You can choose to do this exercise in **groups of two or three students**.
+- X gains 0.5 points (level 2 mark).
+  Scores: X=1.5, O=1
 
-**Until Feb. 13th, 2026:** Each student must design and create an exercise as described above.
+Field 101 now:
 
-**Until Feb. 24th, 2026:** Once done, each student must work out a solution for an exercise created by the other student(s) in the group. If your group consists of three students, you can choose which exercise you want to solve. However, ensure that each student solves a different exercise. You must send a **pull request** with your solution to the GitHub repository of the exercise you solved.
+```
+- 101 -
++---+---+---+
+| X |   |   |
++---+---+---+
+|   |   |   |
++---+---+---+
+|   |   |   |
++---+---+---+
+```
 
-**Until Feb. 27th, 2026:** The author of the exercise must create a code review document for the solution created by the other student(s) in the group. You must create the code review document with the help of a frontier AI model based on the code review prompt you created. Of course, you must check the AI's output and rework it if necessary. Check in the code review document in the GitHub repository of the exercise.
+Turn 4 (O plays inside field 101, center of level 2):
 
-Discuss the code review with the other student(s) in your group. You can always ask your teacher for help or feedback.
+- O gains 0.5 points.
+  Scores: X=1.5, O=1.5
 
-**On Feb. 27th, 2026:** Everyone must be prepared to present the exercise (the creator of the exercise presents, not the one who solved it). Your teacher will randomly select presenters. Your presentation should be max. 8 minutes long and include:
+Turn 5 (X plays inside field 101, top-middle of level 2):
 
-* A brief introduction to the exercise and the requirements.
-  * Describe **why** you added certain requirements and **what learning effect** you wanted to achieve with them.
-* A brief introduction into the code review prompt.
-* Your learnings from the exercise creation, the solution, and the code review.
-  * What was difficult? What was easy?
-  * What would you do differently next time?
-  * Where did you use AI? How did it help you? What were the limitations of AI in this exercise?
+- X gains 0.5 points.
+  Scores: X=2.0, O=1.5
+
+Turn 6 (O plays inside field 101, bottom-right of level 2):
+
+- O gains 0.5 points.
+  Scores: X=2.0, O=2.0
+
+Turn 7 (X plays inside field 101, top-right of level 2):
+
+- X completes three in a row on level 2.
+- Instead of the usual 0.5, X gains (winning multiplier) ⋅ (level 2 points) = 3 ⋅ 0.5 = 1.5.
+- Because won fields are counted, the makrs made in field 101 are NOT lost after the win. The last mark counts also, which counts for 0.5 points.
+  Scores: X=4.0, O=2.0
+
+Field 101 now:
+
+```
+- 101 -
++---+---+---+
+| X | X | X |
++---+---+---+
+|   | O |   |
++---+---+---+
+|   |   | O |
++---+---+---+
+```
+
+Turn 8 (O left-clicks bottom-right, level 1 mark):
+
+- O gains 1 point (level 1 mark).
+  Scores: X=4.0, O=3.0
+
+Board now:
+
+```
++---+---+---+
+| X |   |   |
++---+---+---+
+|   |101|   |
++---+---+---+
+|   |   | O |
++---+---+---+
+```
+
+Turn 9 (X left-clicks top-middle, level 1 mark):
+
+- X gains 1 point (level 1 mark).
+  Scores: X=5.0, O=3.0
+
+Board now:
+
+```
++---+---+---+
+| X | X |   |
++---+---+---+
+|   |101|   |
++---+---+---+
+|   |   | O |
++---+---+---+
+```
+
+Game end:
+
+- X reached 5 points (points needed to win) on Turn 9.
+- The game ends immediately and X wins.
+
+## Functional Requirements
+
+- You have to use the starter code provided and with that, all the tech that we have used thus far (SQLite, EFCore, Angular, ASP.Net, etc.).
+- You have to create a REST api using ASP.Net and a frontend using Angular.
+- You have to use the auto-generated angular api services!!
+
+<br>
+
+- After every turn, the game should be stored in the database. You can choose your database entities as you want.
+- The game should be playable by two players on the same computer.
+- Bonus: Implement an AI player (do this last, because the exercise itself is very complex).
+- Implement a parser for the game board which adds an existing game to the databsae. The logic for the parser must be implemented as in [parsing-logic.md](parsing-logic.md).
+- You can decide whether only one game is shown and that game is overwritten when a new game is imported via the parser, or whether the player chooses what game they are playing from a list of all games on the left side of the screen and parsing adds an additional game.
+- The game parser must be accessable from the frontend. In the frontend, there must be a separate page in which you can paste the content of the file to parse into a textarea and a button to parse. You have to show clear error messages when the parsing fails and a success message when the parsing succeeds. The error messages must be very precise so that the user knows where the error to fix is.
+- Because the logic code is very complex, you must create at least 5 unit tests testing the logic and the logic only.
